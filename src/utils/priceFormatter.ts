@@ -21,7 +21,7 @@ const SYMBOL_EMOJIS: Record<string, string> = {
  * Input: 110621.06
  * Output: 110.621,06
  */
-function formatPriceTurkish(price: number): string {
+export function formatPriceTurkish(price: number): string {
   return price.toLocaleString('tr-TR', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 8

@@ -56,35 +56,23 @@ export function registerPricesModule(bot: Bot) {
       const changeEmoji = quote.changePercent24h > 0 ? '↗️' : '↘️';
       const changeFormatted = quote.changePercent24h > 0 ? `+${quote.changePercent24h.toFixed(2)}%` : `${quote.changePercent24h.toFixed(2)}%`;
       
-      // Format volume
-      const volumeFormatted = quote.volume24h >= 1e9 
-        ? `$${(quote.volume24h / 1e9).toFixed(2)}B`
-        : quote.volume24h >= 1e6
-        ? `$${(quote.volume24h / 1e6).toFixed(2)}M`
-        : `$${(quote.volume24h / 1e3).toFixed(2)}K`;
-      
-      // Format market cap
-      const marketCapFormatted = quote.marketCap >= 1e9
-        ? `$${(quote.marketCap / 1e9).toFixed(2)}B`
-        : quote.marketCap >= 1e6
-        ? `$${(quote.marketCap / 1e6).toFixed(2)}M`
-        : `$${(quote.marketCap / 1e3).toFixed(2)}K`;
-      
-      // Format circulating supply
       // If CMC data available, use it for details
       if (cmcQuote) {
+        // Format volume
         const volumeFormatted = cmcQuote.volume24h >= 1e9 
           ? `$${(cmcQuote.volume24h / 1e9).toFixed(2)}B`
           : cmcQuote.volume24h >= 1e6
           ? `$${(cmcQuote.volume24h / 1e6).toFixed(2)}M`
           : `$${(cmcQuote.volume24h / 1e3).toFixed(2)}K`;
         
+        // Format market cap
         const marketCapFormatted = cmcQuote.marketCap >= 1e9
           ? `$${(cmcQuote.marketCap / 1e9).toFixed(2)}B`
           : cmcQuote.marketCap >= 1e6
           ? `$${(cmcQuote.marketCap / 1e6).toFixed(2)}M`
           : `$${(cmcQuote.marketCap / 1e3).toFixed(2)}K`;
         
+        // Format circulating supply
         const supplyFormatted = cmcQuote.circulatingSupply >= 1e9
           ? `${(cmcQuote.circulatingSupply / 1e9).toFixed(2)}B`
           : cmcQuote.circulatingSupply >= 1e6

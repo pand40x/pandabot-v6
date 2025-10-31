@@ -146,7 +146,7 @@ export function registerWatchlistsModule(bot: Bot) {
           );
           
           // Store creation request for 60 seconds
-          const userId = ctx.from!.id;
+          const userId = ctx.from!.id.toString();
           pendingCreates.set(userId, {
             listName,
             symbols,
@@ -384,7 +384,7 @@ export function registerWatchlistsModule(bot: Bot) {
   bot.callbackQuery(/watchlist_create_(crypto|stock)_(.+)/, async (ctx) => {
     const type = ctx.match[1] as 'crypto' | 'stock';
     const listName = ctx.match[2];
-    const userId = ctx.from!.id;
+    const userId = ctx.from!.id.toString();
     
     await ctx.answerCallbackQuery();
     

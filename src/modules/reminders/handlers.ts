@@ -102,7 +102,7 @@ function parseNaturalLanguageTime(input: string, now: Date = new Date()) {
     for (const timePattern of timePatterns) {
       const match = text.match(timePattern.pattern);
       if (match) {
-        const handled = timePattern.handler(...match);
+        const handled = timePattern.handler(...(match as RegExpMatchArray));
         if (handled) {
           matchedPattern = timePattern;
           remainingText = remainingText.replace(timePattern.pattern, '').trim();
