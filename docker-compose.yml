@@ -1,0 +1,103 @@
+version: '3.8'
+
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:6
+    container_name: pandabot-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: pandabot2025
+      MONGO_INITDB_DATABASE: pandabot
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - pandabot-network
+
+  # Main Bot Application
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: pandabot-bot
+    restart: unless-stopped
+    environment:
+      # Bot Configuration
+      BOT_TOKEN: ${BOT_TOKEN}
+      ADMIN_ID: ${ADMIN_ID}
+      
+      # Database
+      MONGODB_URI: mongodb://root:pandabot2025@mongodb:27017/pandabot?authSource=admin
+      
+      # AI Configuration
+      AI_BASE_URL: ${AI_BASE_URL}
+      MINIMAX_API_KEY: ${MINIMAX_API_KEY}
+      MINIMAX_GROUP_ID: ${MINIMAX_GROUP_ID}
+      
+      # CoinMarketCap API Keys
+      COINMARKETCAP_API_KEY_1: ${COINMARKETCAP_API_KEY_1}
+      COINMARKETCAP_API_KEY_2: ${COINMARKETCAP_API_KEY_2}
+      COINMARKETCAP_API_KEY_3: ${COINMARKETCAP_API_KEY_3}
+      COINMARKETCAP_API_KEY_4: ${COINMARKETCAP_API_KEY_4}
+      
+      # Application Settings
+      ROTATION_MODE: health
+      LOG_LEVEL: info
+      DEFAULT_LANGUAGE: tr
+      DEFAULT_CURRENCY: USD
+      TIMEZONE: Europe/Istanbul
+      
+    depends_on:
+      - mongodb
+    networks:
+      - pandabot-network
+    # volumes:
+    #   - ./logs:/app/logs
+
+  # Alerts Worker (Optional - can run inside bot container)
+  # alerts-worker:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #     target: production
+  #   container_name: pandabot-alerts-worker
+  #   restart: unless-stopped
+  #   environment:
+  #     BOT_TOKEN: ${BOT_TOKEN}
+  #     MONGODB_URI: mongodb://root:pandabot2025@mongodb:27017/pandabot?authSource=admin
+  #     MINIMAX_API_KEY: ${MINIMAX_API_KEY}
+  #     MINIMAX_GROUP_ID: ${MINIMAX_GROUP_ID}
+  #   depends_on:
+  #     - mongodb
+  #   networks:
+  #     - pandabot-network
+  #   command: ["node", "dist/workers/alerts-worker.js"]
+
+  # Reminders Worker (Optional - can run inside bot container)
+  # reminders-worker:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #     target: production
+  #   container_name: pandabot-reminders-worker
+  #   restart: unless-stopped
+  #   environment:
+  #     BOT_TOKEN: ${BOT_TOKEN}
+  #     MONGODB_URI: mongodb://root:pandabot2025@mongodb:27017/pandabot?authSource=admin
+  #   depends_on:
+  #     - mongodb
+  #   networks:
+  #     - pandabot-network
+  #   command: ["node", "dist/workers/reminders-worker.js"]
+
+volumes:
+  mongodb_data:
+    driver: local
+
+networks:
+  pandabot-network:
+    driver: bridge
