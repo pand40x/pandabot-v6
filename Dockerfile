@@ -1,54 +1,38 @@
-# Multi-stage Dockerfile for PandaBot v6
+# Production-ready Dockerfile for PandaBot v6
+FROM node:18-alpine
 
-# Build Stage
-FROM node:18-alpine AS builder
-
-WORKDIR /app
-
-# Copy package files
-COPY package*.json ./
-
-# Install dependencies
-RUN npm ci
-
-# Copy source code
-COPY . .
-
-# Build TypeScript
-RUN npm run build
-
-# Production Stage
-FROM node:18-alpine AS production
-
-WORKDIR /app
-
-# Install dumb-init for proper signal handling
+# Install system dependencies
 RUN apk add --no-cache dumb-init
 
-# Copy package.json first for better caching
-COPY --from=builder /app/package.json ./
+WORKDIR /app
 
-# Copy built application from builder
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
+# Copy package files first for better caching
+COPY package*.json ./
 
-# Create non-root user and set ownership
+# Install all dependencies (build needs dev deps)
+RUN npm ci && npm cache clean --force
+
+# Copy source code
+COPY src ./src
+COPY tsconfig.json ./
+
+# Build TypeScript
+RUN npx tsc --skipLibCheck --noEmit false
+
+# Create non-root user
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S bot -u 1001 && \
     chown -R bot:nodejs /app
 
-# Set user
+# Switch to non-root user
 USER bot
-
-# Expose port (if needed for health checks)
-EXPOSE 3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD node -e "process.exit(0)"
+  CMD node -e "console.log('OK')"
 
-# Start application with dumb-init
+# Use dumb-init for signal handling
 ENTRYPOINT ["dumb-init", "--"]
 
-# Start both bot and worker
+# Start bot and workers
 CMD ["sh", "-c", "node dist/index.js & node dist/workers/alerts-worker.js & node dist/workers/reminders-worker.js & wait"]
